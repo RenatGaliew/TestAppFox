@@ -1,0 +1,209 @@
+﻿<Window x:Class="TestAppFox.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TestAppFox"
+        xmlns:gif="http://wpfanimatedgif.codeplex.com"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance local:MainWindowViewModel}"
+        Title="Screen Shotter" Height="450" Width="800">
+    <Window.Resources>
+        <Style TargetType="ListBoxItem" x:Key="ListBoxItemStyle">
+            <Style.Resources>
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+                <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent" />
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black" />
+                
+            </Style.Resources>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+            <Setter Property="IsEnabled" Value="False" />
+        </Style>
+    </Window.Resources>
+    <Window.InputBindings>
+        <KeyBinding Key="S"
+                    Modifiers="Alt" 
+                    Command="{Binding SaveScreenShotCommand, Mode=OneWay}"/>
+    </Window.InputBindings>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Center">
+            <Label>Short key is "ALT+S"</Label>
+            <Button Margin="10,0" Command="{Binding SaveScreenShotCommand}">Click To Screen Shot</Button>
+            <TextBlock Margin="10,0" Foreground="Green" 
+                       VerticalAlignment="Center"
+                       FontWeight="Bold" 
+                       Text="UPLOADED SCREENSHOT" >
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="Visibility" Value="Collapsed"></Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Uploaded, Mode=OneWay}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"></Setter>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Uploading, Mode=OneWay}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed"></Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            <TextBlock Margin="10,0" Foreground="Green" 
+                       VerticalAlignment="Center"
+                       FontWeight="Bold" 
+                       Text="UPLOADING SCREENSHOT" >
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="Visibility" Value="Collapsed"></Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Uploading, Mode=OneWay}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"></Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </StackPanel>
+        <Grid Grid.Row="1" Margin="0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Vertical">
+                <Button Margin="8,0"
+                        Foreground="Black"
+                        Background="#80009900"
+                        VerticalAlignment="Top" 
+                        Command="{Binding GetScreenShotsCommand, Mode=OneWay}">
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}">
+                            <Setter Property="IsEnabled" Value="True"></Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Loading, Mode=OneWay}" Value="True">
+                                    <Setter Property="IsEnabled" Value="False"></Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    Push to load screenshots
+                </Button>
+                <DatePicker SelectedDate="{Binding StartDateSelected, Mode=TwoWay}" Margin="8"></DatePicker>
+                <DatePicker SelectedDate="{Binding FinishDateSelected, Mode=TwoWay}" Margin="8,0,8,8"></DatePicker>
+            </StackPanel>
+            <ListBox  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      SelectionMode="Extended"
+                      Grid.Column="1" 
+                      ItemsSource="{Binding Screenshots, Mode=OneWay}" 
+                      HorizontalAlignment="Stretch" 
+                      ItemContainerStyle="{StaticResource ListBoxItemStyle}"
+                      x:Name="ListView">
+                <ListBox.Style>
+                    <Style TargetType="{x:Type ListBox }">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Screenshots.Count}" Value="0">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                        <Setter Property="Visibility" Value="Visible"/>
+                    </Style>
+                </ListBox.Style>
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:ScreenShotDataViewModel}">
+                        <Border BorderBrush="Black" BorderThickness="1">
+                            <Grid>
+                            <Image Margin="8,0"
+                                   Width="300" 
+                                   StretchDirection="Both" 
+                                   Stretch="Uniform">
+                                <Image.Style>
+                                    <Style TargetType="{x:Type Image}">
+                                        <Setter Property="Source" Value="{Binding Screenshot,Mode=OneWay}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Screenshot, Mode=OneWay}" Value="{x:Null}">
+                                                <Setter Property="Source" Value="Resources/error.jpg"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                            </Image>
+                            <TextBlock Background="#90000000" 
+                                       Foreground="White"
+                                       Padding="8,2" 
+                                       Text="{Binding Date, Mode=OneWay}" 
+                                       HorizontalAlignment="Right" 
+                                       VerticalAlignment="Top" />
+                            <TextBlock Background="#90000000"
+                                       Foreground="White"
+                                       Padding="8,2" 
+                                       Text="{Binding Id, Mode=OneWay}"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Top" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel IsItemsHost="True" Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+            </ListBox>
+
+            <TextBlock Grid.Column="1"  Text="Don't screenshots" Foreground="Black" FontSize="36" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Error, Mode=OneWay}" Value=""/>
+                                    <Condition Binding="{Binding Screenshots.Count, Mode=OneWay}" Value="0"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <TextBlock Grid.Column="1"  Text="{Binding Error, Mode=OneWay}"
+                       Foreground="OrangeRed" 
+                       FontSize="24" 
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center">
+                <TextBlock.Style>
+                    <Style TargetType="{x:Type TextBlock}">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Error, Mode=OneWay}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <Image Grid.Column="1"  gif:ImageBehavior.AnimatedSource="Resources/cat.gif"
+                   gif:ImageBehavior.AnimationSpeedRatio="2">
+                <Image.Style>
+                    <Style TargetType="{x:Type Image}">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Loading, Mode=OneWay}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Uploading, Mode=OneWay}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Image.Style>
+            </Image>
+        </Grid>
+    </Grid>
+</Window>
